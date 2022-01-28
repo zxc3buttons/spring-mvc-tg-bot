@@ -1,0 +1,5 @@
+CREATE TABLE IF NOT EXISTS tgusers
+(
+    id    BIGSERIAL PRIMARY KEY ,
+    money BIGINT
+);
