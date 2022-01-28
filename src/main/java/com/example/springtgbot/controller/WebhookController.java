@@ -1,7 +1,7 @@
 package com.example.springtgbot.controller;
 
 import com.example.springtgbot.TelegramBot;
-import com.example.springtgbot.model.tgusers;
+import com.example.springtgbot.model.User;
 import com.example.springtgbot.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -28,7 +28,7 @@ public class WebhookController {
     @RequestMapping(value = "/", method = RequestMethod.POST)
     public BotApiMethod<?> onUpdateReceived(@RequestBody Update update){
 
-        tgusers user = new tgusers();
+        User user = new User();
 
         if(update.getMessage().getText().matches("^\\d+$"))
         {
