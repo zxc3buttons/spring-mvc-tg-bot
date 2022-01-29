@@ -1,15 +1,22 @@
 package com.example.springtgbot;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramWebhookBot;
 import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
-import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
-import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 @Component
 public class TelegramBot extends TelegramWebhookBot {
+
+
+    private UpdateHandler updateHandler;
+
+    @Autowired
+    public TelegramBot(UpdateHandler updateHandler) {
+        this.updateHandler = updateHandler;
+    }
 
     @Value("${bot.username}")
     private String username;
@@ -37,17 +44,12 @@ public class TelegramBot extends TelegramWebhookBot {
 
     @Override
     public BotApiMethod<?> onWebhookUpdateReceived(Update update) {
-        if(update.getMessage() != null && update.getMessage().hasText()) {
-            long chat_id = update.getMessage().getChatId();
 
-            try{
-                execute(new SendMessage(Long.toString(chat_id), "Hi" + update.getMessage().getText()));
-            }
-            catch (TelegramApiException exception) {
-                exception.printStackTrace();
-            }
+        return updateHandler.handleUpdate(update);
+
         }
-        return null;
-    }
+        //todo: цепь методов (из webhookcontroller -> tg onwebhookupdaterecieved -> messagehandler(здесь будут все
+        //todo: возможные варианты, в них будут записываться данные в бд и там же создаваться клавиатуры
+        //todo: https://www.youtube.com/watch?v=sqyvy6kVgwM&list=PLHkGizioHWF2a5mesJC7w3_9EYpaRBJJq&index=3 11 min
 
 }

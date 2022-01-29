@@ -18,6 +18,8 @@ public class tgusers {
     private int money;
     private Date date;
     private String category;
+    @Column(name = "change_type")
     private String changeType;
+    @Column(name = "chat_id")
     private Long chatId;
 }

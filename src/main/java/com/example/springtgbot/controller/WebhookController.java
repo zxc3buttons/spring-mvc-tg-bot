@@ -16,7 +16,7 @@ import java.sql.Date;
 @RestController
 public class WebhookController {
 
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
     private final TelegramBot telegramBot;
 
     @Autowired
