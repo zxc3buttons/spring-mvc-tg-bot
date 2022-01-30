@@ -1,5 +1,6 @@
 package com.example.springtgbot.service;
 
+import com.example.springtgbot.model.tgusers;
 import com.example.springtgbot.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -13,24 +14,26 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Service
-public class StatisticsService {
-
-    private UserRepository userRepository;
+public class ResultOfAddingService {
+    private final UserRepository userRepository;
 
     @Autowired
-    public StatisticsService(UserRepository userRepository) {
+    public ResultOfAddingService(UserRepository userRepository) {
         this.userRepository = userRepository;
     }
 
-    public SendMessage getStatisticsMessage(Message message) {
-        final ReplyKeyboardMarkup replyKeyboardMarkup = getMainMenuKeyBoard();
-        final String textMessage = "Ваши расходы по всем категориям ежедневного кошелька: \n"
-                + userRepository.getExpenses(message.getChatId(), "Расход");
+    public SendMessage getResultMessage(final Message message) {
+        final ReplyKeyboardMarkup replyKeyboardMarkup = getChangeMenuKeyBoard();
+
+        userRepository.setCategoryForLastInsert(message.getText());
+
+        String textMessage = "Добавлен расход по категории: " + message.getText();
 
         return createMessageWithKeyboard(message.getChatId(), textMessage, replyKeyboardMarkup);
     }
 
-    private ReplyKeyboardMarkup getMainMenuKeyBoard() {
+    private ReplyKeyboardMarkup getChangeMenuKeyBoard() {
+
         final ReplyKeyboardMarkup replyKeyboardMarkup = new ReplyKeyboardMarkup();
         replyKeyboardMarkup.setSelective(true);
         replyKeyboardMarkup.setResizeKeyboard(true);
@@ -38,17 +41,17 @@ public class StatisticsService {
 
         List<KeyboardRow> keyboardRowList = new ArrayList<>();
 
-        KeyboardRow rowStat = new KeyboardRow();
-        KeyboardRow rowBalanceOfDaily = new KeyboardRow();
-        KeyboardRow rowBalanceOfAccumulative = new KeyboardRow();
+        KeyboardRow addIncome = new KeyboardRow();
+        KeyboardRow addExpense = new KeyboardRow();
+        KeyboardRow backToMenu = new KeyboardRow();
 
-        rowStat.add(new KeyboardButton("Получить статистику по кошелькам"));
-        rowBalanceOfDaily.add(new KeyboardButton("Ежедневный кошелек"));
-        rowBalanceOfAccumulative.add(new KeyboardButton("Накопительный кошелек"));
+        addIncome.add(new KeyboardButton("Добавить доход"));
+        addExpense.add(new KeyboardButton("Добавить расход"));
+        backToMenu.add(new KeyboardButton("Назад в главное меню"));
 
-        keyboardRowList.add(rowStat);
-        keyboardRowList.add(rowBalanceOfDaily);
-        keyboardRowList.add(rowBalanceOfAccumulative);
+        keyboardRowList.add(addIncome);
+        keyboardRowList.add(addExpense);
+        keyboardRowList.add(backToMenu);
 
         replyKeyboardMarkup.setKeyboard(keyboardRowList);
 
@@ -63,9 +66,6 @@ public class StatisticsService {
         final SendMessage sendMessage = new SendMessage();
         sendMessage.enableMarkdown(true);
         sendMessage.setChatId(Long.toString(chatId));
-
-
-
         sendMessage.setText(textMessage);
 
         if(replyKeyboardMarkup != null) {

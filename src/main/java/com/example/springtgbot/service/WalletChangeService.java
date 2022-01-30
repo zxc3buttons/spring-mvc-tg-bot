@@ -10,16 +10,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Service
-public class MainMenuService {
+public class WalletChangeService {
+    public SendMessage getChangeMenuMessage(final long chatId, final String textMessage) {
+        final ReplyKeyboardMarkup replyKeyboardMarkup = getChangeMenuKeyBoard();
 
-    public SendMessage getMainMenuMessage(final long chatId, final String textMessage) {
-        final ReplyKeyboardMarkup replyKeyboardMarkup = getMainMenuKeyBoard();
-        final SendMessage mainMenuMessage = createMessageWithKeyboard(chatId, textMessage, replyKeyboardMarkup);
-
-        return mainMenuMessage;
+        return createMessageWithKeyboard(chatId, textMessage, replyKeyboardMarkup);
     }
 
-    private ReplyKeyboardMarkup getMainMenuKeyBoard() {
+    private ReplyKeyboardMarkup getChangeMenuKeyBoard() {
+
         final ReplyKeyboardMarkup replyKeyboardMarkup = new ReplyKeyboardMarkup();
         replyKeyboardMarkup.setSelective(true);
         replyKeyboardMarkup.setResizeKeyboard(true);
@@ -27,17 +26,17 @@ public class MainMenuService {
 
         List<KeyboardRow> keyboardRowList = new ArrayList<>();
 
-        KeyboardRow rowStat = new KeyboardRow();
-        KeyboardRow rowBalanceOfDaily = new KeyboardRow();
-        KeyboardRow rowBalanceOfAccumulative = new KeyboardRow();
+        KeyboardRow addIncome = new KeyboardRow();
+        KeyboardRow addExpense = new KeyboardRow();
+        KeyboardRow backToMenu = new KeyboardRow();
 
-        rowStat.add(new KeyboardButton("Получить статистику по кошелькам"));
-        rowBalanceOfDaily.add(new KeyboardButton("Ежедневный кошелек"));
-        rowBalanceOfAccumulative.add(new KeyboardButton("Накопительный кошелек"));
+        addIncome.add(new KeyboardButton("Добавить доход"));
+        addExpense.add(new KeyboardButton("Добавить расход"));
+        backToMenu.add(new KeyboardButton("Назад в главное меню"));
 
-        keyboardRowList.add(rowStat);
-        keyboardRowList.add(rowBalanceOfDaily);
-        keyboardRowList.add(rowBalanceOfAccumulative);
+        keyboardRowList.add(addIncome);
+        keyboardRowList.add(addExpense);
+        keyboardRowList.add(backToMenu);
 
         replyKeyboardMarkup.setKeyboard(keyboardRowList);
 

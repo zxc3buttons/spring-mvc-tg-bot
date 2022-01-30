@@ -16,27 +16,15 @@ import java.sql.Date;
 @RestController
 public class WebhookController {
 
-    private final UserRepository userRepository;
     private final TelegramBot telegramBot;
 
     @Autowired
-    public WebhookController(TelegramBot telegramBot, UserRepository userRepository) {
+    public WebhookController(TelegramBot telegramBot) {
         this.telegramBot = telegramBot;
-        this.userRepository = userRepository;
     }
 
     @RequestMapping(value = "/", method = RequestMethod.POST)
     public BotApiMethod<?> onUpdateReceived(@RequestBody Update update){
-
-        tgusers tgusers = new tgusers();
-
-        if(update.getMessage().getText().matches("^\\d+$"))
-        {
-            tgusers.setChatId(update.getMessage().getChatId());
-            tgusers.setMoney(Integer.parseInt(update.getMessage().getText()));
-            tgusers.setDate(new Date((long)update.getMessage().getDate()*1000));
-            userRepository.save(tgusers);
-        }
 
         return telegramBot.onWebhookUpdateReceived(update);
     }

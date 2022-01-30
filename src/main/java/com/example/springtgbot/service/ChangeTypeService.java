@@ -4,7 +4,6 @@ import com.example.springtgbot.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
-import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardButton;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
@@ -13,24 +12,28 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Service
-public class StatisticsService {
-
-    private UserRepository userRepository;
+public class ChangeTypeService {
+    private final UserRepository userRepository;
 
     @Autowired
-    public StatisticsService(UserRepository userRepository) {
+    public ChangeTypeService(UserRepository userRepository) {
         this.userRepository = userRepository;
     }
 
-    public SendMessage getStatisticsMessage(Message message) {
-        final ReplyKeyboardMarkup replyKeyboardMarkup = getMainMenuKeyBoard();
-        final String textMessage = "Ваши расходы по всем категориям ежедневного кошелька: \n"
-                + userRepository.getExpenses(message.getChatId(), "Расход");
+    public SendMessage getChangedBalanceMessage(final long chatId, String inputMessage) {
+        final ReplyKeyboardMarkup replyKeyboardMarkup = getChangeMenuKeyBoard();
 
-        return createMessageWithKeyboard(message.getChatId(), textMessage, replyKeyboardMarkup);
+        String textMessage;
+        if(inputMessage.equals("Добавить расход"))
+            textMessage = "Введите сумму расхода";
+        else
+            textMessage = "Введите сумму дохода";
+
+        return createMessageWithKeyboard(chatId, textMessage, replyKeyboardMarkup);
     }
 
-    private ReplyKeyboardMarkup getMainMenuKeyBoard() {
+    private ReplyKeyboardMarkup getChangeMenuKeyBoard() {
+
         final ReplyKeyboardMarkup replyKeyboardMarkup = new ReplyKeyboardMarkup();
         replyKeyboardMarkup.setSelective(true);
         replyKeyboardMarkup.setResizeKeyboard(true);
@@ -38,17 +41,17 @@ public class StatisticsService {
 
         List<KeyboardRow> keyboardRowList = new ArrayList<>();
 
-        KeyboardRow rowStat = new KeyboardRow();
-        KeyboardRow rowBalanceOfDaily = new KeyboardRow();
-        KeyboardRow rowBalanceOfAccumulative = new KeyboardRow();
+        KeyboardRow addIncome = new KeyboardRow();
+        KeyboardRow addExpense = new KeyboardRow();
+        KeyboardRow backToMenu = new KeyboardRow();
 
-        rowStat.add(new KeyboardButton("Получить статистику по кошелькам"));
-        rowBalanceOfDaily.add(new KeyboardButton("Ежедневный кошелек"));
-        rowBalanceOfAccumulative.add(new KeyboardButton("Накопительный кошелек"));
+        addIncome.add(new KeyboardButton("Добавить доход"));
+        addExpense.add(new KeyboardButton("Добавить расход"));
+        backToMenu.add(new KeyboardButton("Назад в главное меню"));
 
-        keyboardRowList.add(rowStat);
-        keyboardRowList.add(rowBalanceOfDaily);
-        keyboardRowList.add(rowBalanceOfAccumulative);
+        keyboardRowList.add(addIncome);
+        keyboardRowList.add(addExpense);
+        keyboardRowList.add(backToMenu);
 
         replyKeyboardMarkup.setKeyboard(keyboardRowList);
 
