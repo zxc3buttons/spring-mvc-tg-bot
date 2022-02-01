@@ -1,7 +1,8 @@
 package com.example.springtgbot.service;
 
 import com.example.springtgbot.BotState;
-import com.example.springtgbot.repository.UserRepository;
+import com.example.springtgbot.model.balance;
+import com.example.springtgbot.repository.BalanceRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -14,24 +15,38 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Service
-public class ResultOfAddingService {
-    private final UserRepository userRepository;
+public class SetBalanceService {
+
+    private final BalanceRepository balanceRepository;
 
     @Autowired
-    public ResultOfAddingService(UserRepository userRepository) {
-        this.userRepository = userRepository;
+    public SetBalanceService(BalanceRepository balanceRepository) {
+        this.balanceRepository = balanceRepository;
     }
 
-    public SendMessage getResultMessage(final Message message, BotState botState) {
+    public SendMessage getBalanceInstalledMessage(Message message, BotState previousState) {
         final ReplyKeyboardMarkup replyKeyboardMarkup = getChangeMenuKeyBoard();
+        final String textMessage;
+        final String walletType;
 
-        userRepository.setCategoryForLastInsert(message.getText());
-        String textMessage;
+        if(previousState == BotState.DAILY_WALLET){
+            walletType = "Ежедневный";
+            textMessage = "Баланс ежедневного кошелька: " + message.getText();
+        }
+        else{
+            walletType = "Накопительный";
+            textMessage = "Баланс накопительного кошелька: " + message.getText();
+        }
 
-        if(botState == BotState.EXPENSE_CATEGORY)
-            textMessage = "Добавлен расход по категории: " + message.getText();
-        else
-            textMessage = "Добавлен доход по категории: " + message.getText();
+        if(balanceRepository.existsByChatIdAndWalletType(message.getChatId(), walletType))
+            balanceRepository.setNewBalance(message.getChatId(), Long.parseLong(message.getText()), walletType);
+        else{
+            balance balance = new balance();
+            balance.setChatId(message.getChatId());
+            balance.setMoneyAmount(Long.parseLong(message.getText()));
+            balance.setWalletType(walletType);
+            balanceRepository.save(balance);
+        }
 
         return createMessageWithKeyboard(message.getChatId(), textMessage, replyKeyboardMarkup);
     }
@@ -48,13 +63,16 @@ public class ResultOfAddingService {
         KeyboardRow addIncome = new KeyboardRow();
         KeyboardRow addExpense = new KeyboardRow();
         KeyboardRow backToMenu = new KeyboardRow();
+        KeyboardRow setBalance = new KeyboardRow();
 
         addIncome.add(new KeyboardButton("Добавить доход"));
         addExpense.add(new KeyboardButton("Добавить расход"));
+        setBalance.add(new KeyboardButton("Установить баланс кошелька"));
         backToMenu.add(new KeyboardButton("Назад в главное меню"));
 
         keyboardRowList.add(addIncome);
         keyboardRowList.add(addExpense);
+        keyboardRowList.add(setBalance);
         keyboardRowList.add(backToMenu);
 
         replyKeyboardMarkup.setKeyboard(keyboardRowList);
@@ -70,6 +88,9 @@ public class ResultOfAddingService {
         final SendMessage sendMessage = new SendMessage();
         sendMessage.enableMarkdown(true);
         sendMessage.setChatId(Long.toString(chatId));
+
+
+
         sendMessage.setText(textMessage);
 
         if(replyKeyboardMarkup != null) {
@@ -79,4 +100,5 @@ public class ResultOfAddingService {
         return sendMessage;
 
     }
+
 }

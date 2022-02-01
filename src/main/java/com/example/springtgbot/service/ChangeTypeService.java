@@ -1,5 +1,7 @@
 package com.example.springtgbot.service;
 
+import com.example.springtgbot.BotState;
+import com.example.springtgbot.model.wallet_changes;
 import com.example.springtgbot.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -20,14 +22,23 @@ public class ChangeTypeService {
         this.userRepository = userRepository;
     }
 
-    public SendMessage getChangedBalanceMessage(final long chatId, String inputMessage) {
+    public SendMessage getChangedBalanceMessage(final long chatId, String inputMessage, BotState botState) {
         final ReplyKeyboardMarkup replyKeyboardMarkup = getChangeMenuKeyBoard();
+
+        wallet_changes wallet_changes = new wallet_changes();
 
         String textMessage;
         if(inputMessage.equals("Добавить расход"))
             textMessage = "Введите сумму расхода";
         else
             textMessage = "Введите сумму дохода";
+
+        if(botState == BotState.DAILY_WALLET)
+            wallet_changes.setWalletType("Ежедневный");
+        else
+            wallet_changes.setWalletType("Накопительный");
+
+        userRepository.save(wallet_changes);
 
         return createMessageWithKeyboard(chatId, textMessage, replyKeyboardMarkup);
     }

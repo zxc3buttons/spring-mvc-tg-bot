@@ -15,7 +15,7 @@ import java.util.List;
 @Service
 public class StatisticsService {
 
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
 
     @Autowired
     public StatisticsService(UserRepository userRepository) {
@@ -24,8 +24,17 @@ public class StatisticsService {
 
     public SendMessage getStatisticsMessage(Message message) {
         final ReplyKeyboardMarkup replyKeyboardMarkup = getMainMenuKeyBoard();
-        final String textMessage = "Ваши расходы по всем категориям ежедневного кошелька: \n"
-                + userRepository.getExpenses(message.getChatId(), "Расход");
+
+        final String textMessage;
+
+        if(userRepository.existsByChatId(message.getChatId())) {
+            textMessage = "Ваши расходы по всем категориям ежедневного кошелька: \n"
+                    + userRepository.getChanges(message.getChatId(), "Расход");
+        }
+        else{
+            textMessage = "Для получения статистики следует задать сумму расходов и доходов. \n" +
+                    "Вы можете выбрать ежедневный или накопительный кошелёк";
+        }
 
         return createMessageWithKeyboard(message.getChatId(), textMessage, replyKeyboardMarkup);
     }

@@ -1,6 +1,7 @@
 package com.example.springtgbot.service;
 
-import com.example.springtgbot.model.tgusers;
+import com.example.springtgbot.BotState;
+import com.example.springtgbot.model.wallet_changes;
 import com.example.springtgbot.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -24,22 +25,30 @@ public class CategoryChooseService {
         this.userRepository = userRepository;
     }
 
-    public SendMessage getCategorySettingMessage(final Message message) {
-        final ReplyKeyboardMarkup replyKeyboardMarkup = getChangeMenuKeyBoard();
+    public SendMessage getCategorySettingMessage(final Message message, BotState botState) {
+        final ReplyKeyboardMarkup replyKeyboardMarkup = getCategoryChooseMenuKeyBoard(botState);
 
-        tgusers tgusers = new tgusers();
-        tgusers.setChatId(message.getChatId());
-        tgusers.setMoney(Integer.parseInt(message.getText()));
-        tgusers.setDate(new Date((long)message.getDate()*1000));
-        tgusers.setChangeType("Расход");
-        userRepository.save(tgusers);
+        String changeType;
+
+        /*wallet_changes wallet_changes = new wallet_changes();
+        wallet_changes.setChatId(message.getChatId());
+        wallet_changes.setMoney(Integer.parseInt(message.getText()));
+        wallet_changes.setDate(new Date((long)message.getDate()*1000));*/
+
+        if(botState == BotState.ADD_EXPENSE)
+            changeType = "Расход";
+        else
+            changeType = "Доход";
+
+        userRepository.setValuesForLastInsert(Integer.parseInt(message.getText()), message.getChatId(),
+                new Date((long)message.getDate()*1000), changeType);
 
         String textMessage = "Выберите категорию";
 
         return createMessageWithKeyboard(message.getChatId(), textMessage, replyKeyboardMarkup);
     }
 
-    private ReplyKeyboardMarkup getChangeMenuKeyBoard() {
+    private ReplyKeyboardMarkup getCategoryChooseMenuKeyBoard(BotState botState) {
 
         final ReplyKeyboardMarkup replyKeyboardMarkup = new ReplyKeyboardMarkup();
         replyKeyboardMarkup.setSelective(true);
@@ -52,17 +61,24 @@ public class CategoryChooseService {
         KeyboardRow row2 = new KeyboardRow();
         KeyboardRow row3 = new KeyboardRow();
 
-        row1.add(new KeyboardButton("Продукты"));
-        row1.add(new KeyboardButton("Кафе"));
-        row1.add(new KeyboardButton("Здоровье"));
+        if(botState == BotState.ADD_EXPENSE) {
+            row1.add(new KeyboardButton("Продукты"));
+            row1.add(new KeyboardButton("Кафе"));
+            row1.add(new KeyboardButton("Здоровье"));
 
-        row2.add(new KeyboardButton("Образование"));
-        row2.add(new KeyboardButton("Развлечения"));
-        row2.add(new KeyboardButton("Связь/интернет"));
+            row2.add(new KeyboardButton("Образование"));
+            row2.add(new KeyboardButton("Развлечения"));
+            row2.add(new KeyboardButton("Связь/интернет"));
 
-        row3.add(new KeyboardButton("Одежда"));
-        row3.add(new KeyboardButton("Транспорт"));
-        row3.add(new KeyboardButton("Подарки"));
+            row3.add(new KeyboardButton("Одежда"));
+            row3.add(new KeyboardButton("Транспорт"));
+            row3.add(new KeyboardButton("Подарки"));
+        }
+        else {
+            row1.add(new KeyboardButton("Зарплата"));
+            row2.add(new KeyboardButton("Деньги родственников"));
+            row3.add(new KeyboardButton("Подарочные"));
+        }
 
         keyboardRowList.add(row1);
         keyboardRowList.add(row2);

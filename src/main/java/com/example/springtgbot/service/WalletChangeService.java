@@ -29,13 +29,16 @@ public class WalletChangeService {
         KeyboardRow addIncome = new KeyboardRow();
         KeyboardRow addExpense = new KeyboardRow();
         KeyboardRow backToMenu = new KeyboardRow();
+        KeyboardRow setBalance = new KeyboardRow();
 
         addIncome.add(new KeyboardButton("Добавить доход"));
         addExpense.add(new KeyboardButton("Добавить расход"));
+        setBalance.add(new KeyboardButton("Установить баланс кошелька"));
         backToMenu.add(new KeyboardButton("Назад в главное меню"));
 
         keyboardRowList.add(addIncome);
         keyboardRowList.add(addExpense);
+        keyboardRowList.add(setBalance);
         keyboardRowList.add(backToMenu);
 
         replyKeyboardMarkup.setKeyboard(keyboardRowList);
