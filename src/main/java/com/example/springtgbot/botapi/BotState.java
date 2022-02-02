@@ -1,4 +1,4 @@
-package com.example.springtgbot;
+package com.example.springtgbot.botapi;
 
 public enum BotState {
     START,
@@ -7,7 +7,6 @@ public enum BotState {
     ACCUMULATIVE_WALLET,
     ADD_EXPENSE,
     ADD_INCOME,
-    PRODUCTS,
     BALANCE_CHANGED,
     SET_BALANCE,
     TRY_SET_BALANCE,

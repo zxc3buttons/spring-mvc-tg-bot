@@ -44,12 +44,8 @@ public class TelegramBot extends TelegramWebhookBot {
 
     @Override
     public BotApiMethod<?> onWebhookUpdateReceived(Update update) {
-
         return updateHandler.handleUpdate(update);
+    }
 
-        }
-        //todo: цепь методов (из webhookcontroller -> tg onwebhookupdaterecieved -> messagehandler(здесь будут все
-        //todo: возможные варианты, в них будут записываться данные в бд и там же создаваться клавиатуры
-        //todo: https://www.youtube.com/watch?v=sqyvy6kVgwM&list=PLHkGizioHWF2a5mesJC7w3_9EYpaRBJJq&index=3 11 min
 
 }

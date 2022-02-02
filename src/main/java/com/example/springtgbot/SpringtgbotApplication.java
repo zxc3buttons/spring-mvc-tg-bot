@@ -8,9 +8,7 @@ import org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfigurat
 
 @SpringBootApplication
 class SpringtgbotApplication {
-
     public static void main(String[] args) {
         SpringApplication.run(SpringtgbotApplication.class, args);
     }
-
 }

@@ -1,5 +1,6 @@
 package com.example.springtgbot.repository;
 
+import com.example.springtgbot.Statistics;
 import com.example.springtgbot.model.wallet_changes;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -10,6 +11,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
+import java.util.List;
 
 @Repository
 public interface UserRepository extends CrudRepository<wallet_changes, Integer> {
@@ -19,6 +21,13 @@ public interface UserRepository extends CrudRepository<wallet_changes, Integer> 
 
     @Query(value = "SELECT SUM(money) FROM wallet_changes WHERE chatId = ?1 AND changeType = ?2")
     int getChanges(@Param("chat_id") long chatId, @Param("change_type") String changeType);
+
+    @Query(value = "SELECT new com.example.springtgbot.Statistics(w.category, SUM(w.money)) FROM wallet_changes w" +
+            " WHERE date = ?2 " +
+            "AND walletType = ?3 AND changeType = ?4 AND chatId = ?1 " +
+            "GROUP BY category ORDER BY SUM(money) DESC")
+    List<Statistics> getChangesByCategory(@Param("chat_id") long chatId, @Param("date")Date date,
+                                          @Param("wallet_type") String walletType, @Param("change_type")String changeType);
 
     boolean existsByChatId(long chatId);
 

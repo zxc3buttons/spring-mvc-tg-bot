@@ -1,5 +1,7 @@
 package com.example.springtgbot;
 
+import com.example.springtgbot.botapi.BotState;
+import com.example.springtgbot.botapi.BotStateCache;
 import com.example.springtgbot.service.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,48 +57,47 @@ public class UpdateHandler {
     private SendMessage handleInputMessage(Message message) {
         String inputMsg = message.getText();
         long chatId = message.getChatId();
-        SendMessage replyMessage;
-        BotState botState = setBotCurrentState(inputMsg, botStateCache.getCurrentState(chatId));
+        BotState botState = setBotCurrentState(message, botStateCache);
 
         switch (botState) {
-            case START:
-                botStateCache.addCurrentState(message.getChatId(), botState);
-                return mainMenuService.getMainMenuMessage(chatId, inputMsg);
             case STATISTICS:
                 botStateCache.addCurrentState(message.getChatId(), botState);
                 return statisticsService.getStatisticsMessage(message);
             case DAILY_WALLET:
             case ACCUMULATIVE_WALLET:
                 botStateCache.addCurrentState(message.getChatId(), botState);
-                botStateCache.print(chatId);
-                return walletChangeService.getChangeMenuMessage(chatId, inputMsg);
+                return walletChangeService.getChangeMenuMessage(message, botStateCache.getLastWalletState(chatId));
             case TRY_SET_BALANCE:
                 return new SendMessage(Long.toString(message.getChatId()), "Введите баланс кошелька");
             case SET_BALANCE:
                 botStateCache.addCurrentState(message.getChatId(), botState);
-                botStateCache.print(chatId);
                 return setBalanceService.getBalanceInstalledMessage(message, botStateCache.getLastWalletState(chatId));
             case ADD_EXPENSE:
             case ADD_INCOME:
                 botStateCache.addCurrentState(message.getChatId(), botState);
-                botStateCache.print(chatId);
-                return changeTypeService.getChangedBalanceMessage(chatId, inputMsg, botStateCache.getLastWalletState(chatId));
+                return changeTypeService.getChangedBalanceMessage(chatId, inputMsg,
+                        botStateCache.getLastWalletState(chatId));
             case BALANCE_CHANGED:
                 botStateCache.addCurrentState(message.getChatId(), botState);
-                botStateCache.print(chatId);
-                return categoryChooseService.getCategorySettingMessage(message, botStateCache.getLastChangeState(chatId));
+                return categoryChooseService.getCategorySettingMessage(message,
+                        botStateCache.getLastChangeTypeState(chatId),
+                        botStateCache.getLastWalletState(chatId));
             case EXPENSE_CATEGORY:
             case INCOME_CATEGORY:
                 botStateCache.addCurrentState(message.getChatId(), botState);
                 return resultOfAddingService.getResultMessage(message, botState);
             default:
-                replyMessage = new SendMessage(Long.toString(message.getChatId()), "Hi" + inputMsg);
-                return replyMessage;
+                botStateCache.addCurrentState(message.getChatId(), BotState.START);
+                return mainMenuService.getMainMenuMessage(chatId, "Все процедуры начинаются с главного " +
+                        "меню :)");
         }
 
     }
 
-    private BotState setBotCurrentState (String inputMessage, BotState currentBotState) {
+    private BotState setBotCurrentState (Message message, BotStateCache botStateCache) {
+
+        String inputMessage = message.getText();
+        BotState currentBotState = botStateCache.getCurrentState(message.getChatId());
 
         if((currentBotState == BotState.ACCUMULATIVE_WALLET || currentBotState == BotState.DAILY_WALLET ||
                 currentBotState == BotState.SET_BALANCE)
@@ -113,8 +114,12 @@ public class UpdateHandler {
             case "Накопительный кошелек":
                 return BotState.ACCUMULATIVE_WALLET;
             case "Добавить расход":
+                if(botStateCache.getLastWalletState(message.getChatId()) == null)
+                    return BotState.START;
                 return BotState.ADD_EXPENSE;
             case "Добавить доход":
+                if(botStateCache.getLastWalletState(message.getChatId()) == null)
+                    return BotState.START;
                 return BotState.ADD_INCOME;
             case "Продукты":
             case "Кафе":
@@ -125,12 +130,18 @@ public class UpdateHandler {
             case "Одежда":
             case "Транспорт":
             case "Подарки":
+                if(botStateCache.getLastChangeTypeState(message.getChatId()) == null)
+                    return BotState.START;
                 return BotState.EXPENSE_CATEGORY;
             case "Зарплата":
             case "Деньги родственников":
             case "Подарочные":
+                if(botStateCache.getLastChangeTypeState(message.getChatId()) == null)
+                    return BotState.START;
                 return BotState.INCOME_CATEGORY;
             case "Установить баланс кошелька":
+                if(botStateCache.getLastWalletState(message.getChatId()) == null)
+                    return BotState.START;
                 return BotState.TRY_SET_BALANCE;
             case "Введите баланс кошелька":
                 return BotState.SET_BALANCE;

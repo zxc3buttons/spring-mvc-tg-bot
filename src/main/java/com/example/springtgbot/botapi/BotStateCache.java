@@ -1,23 +1,25 @@
-package com.example.springtgbot;
+package com.example.springtgbot.botapi;
 
 import java.util.ArrayList;
 import java.util.Map;
 
 public class BotStateCache {
 
-    private Map<Long, ArrayList<BotState>> map;
+    private final Map<Long, ArrayList<BotState>> map;
 
     public BotStateCache(Map<Long, ArrayList<BotState>> map) {
         this.map = map;
+    }
 
+    private void initialize(Long chatId) {
+        if(map.size() == 0 || !map.containsKey(chatId)){
+            map.put(chatId, new ArrayList<>());
+            map.get(chatId).add(BotState.START);
+        }
     }
 
     public BotState getPreviousState(Long chatId) {
-        if(map.size() == 0){
-            map.put(chatId, new ArrayList<>());
-            map.get(chatId).add(BotState.START);
-            map.get(chatId).add(BotState.START);
-        }
+        initialize(chatId);
         return map.get(chatId).get(0);
     }
 
@@ -29,7 +31,7 @@ public class BotStateCache {
         return null;
     }
 
-    public BotState getLastChangeState(Long chatId) {
+    public BotState getLastChangeTypeState(Long chatId) {
         for(int i = map.get(chatId).size() - 1; i > -1; i--)
             if(map.get(chatId).get(i) == BotState.ADD_EXPENSE ||
                     map.get(chatId).get(i) == BotState.ADD_INCOME)
@@ -38,20 +40,13 @@ public class BotStateCache {
     }
 
     public BotState getCurrentState(Long chatId) {
-        if(map.size() == 0 && !map.containsKey(chatId)) {
-            map.put(chatId, new ArrayList<>());
-            map.get(chatId).add(BotState.START);
-        }
+        initialize(chatId);
         return map.get(chatId).get(map.get(chatId).size() - 1);
     }
 
     public void setCurrentState(Long chatId, BotState botState) {
-        if(map.size() == 0 && !map.containsKey(chatId)){
-            map.put(chatId, new ArrayList<>());
-            map.get(chatId).add(botState);
-            map.get(chatId).add(botState);
-        }
-        else if(botState != map.get(chatId).get(map.get(chatId).size()-1)){
+        initialize(chatId);
+        if(botState != map.get(chatId).get(map.get(chatId).size()-1)){
             map.get(chatId).set(0, map.get(chatId).get(map.get(chatId).size()-1));
             map.get(chatId).set(1, botState);
         }
@@ -59,7 +54,7 @@ public class BotStateCache {
     }
 
     public void addCurrentState(Long chatId, BotState botState) {
-        if(map.size() == 0 && !map.containsKey(chatId))
+        if(map.size() == 0 || !map.containsKey(chatId))
             map.put(chatId, new ArrayList<>());
         map.get(chatId).add(botState);
     }
