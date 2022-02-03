@@ -24,13 +24,14 @@ public class UpdateHandler {
     private final CategoryChooseService categoryChooseService;
     private final ResultOfAddingService resultOfAddingService;
     private final SetBalanceService setBalanceService;
+    private final StatisticsTimeInterval statisticsTimeInterval;
     private final BotStateCache botStateCache = new BotStateCache(new HashMap<>());
 
     @Autowired
     public UpdateHandler(MainMenuService mainMenuService, StatisticsService statisticsService,
                          WalletChangeService walletChangeService, ChangeTypeService changeTypeService,
                          CategoryChooseService categoryChooseService, ResultOfAddingService resultOfAddingService,
-                         SetBalanceService setBalanceService) {
+                         SetBalanceService setBalanceService, StatisticsTimeInterval statisticsTimeInterval) {
 
         this.mainMenuService = mainMenuService;
         this.statisticsService = statisticsService;
@@ -39,7 +40,7 @@ public class UpdateHandler {
         this.categoryChooseService = categoryChooseService;
         this.resultOfAddingService = resultOfAddingService;
         this.setBalanceService = setBalanceService;
-
+        this.statisticsTimeInterval = statisticsTimeInterval;
     }
 
     public SendMessage handleUpdate(Update update) {
@@ -60,9 +61,13 @@ public class UpdateHandler {
         BotState botState = setBotCurrentState(message, botStateCache);
 
         switch (botState) {
+            case STATISTICS_CHOOSE:
+                botStateCache.addCurrentState(message.getChatId(), botState);
+                return statisticsTimeInterval.getChooseStatisticsIntervalMessage(chatId,
+                        "Выберите интервал для показа статистики");
             case STATISTICS:
                 botStateCache.addCurrentState(message.getChatId(), botState);
-                return statisticsService.getStatisticsMessage(message);
+                return statisticsService.getStatisticsMessage(message, botState);
             case DAILY_WALLET:
             case ACCUMULATIVE_WALLET:
                 botStateCache.addCurrentState(message.getChatId(), botState);
@@ -86,6 +91,9 @@ public class UpdateHandler {
             case INCOME_CATEGORY:
                 botStateCache.addCurrentState(message.getChatId(), botState);
                 return resultOfAddingService.getResultMessage(message, botState);
+            case OTHER_CATEGORY:
+                botStateCache.addCurrentState(message.getChatId(), botState);
+                return new SendMessage(Long.toString(message.getChatId()), "Введите категорию");
             default:
                 botStateCache.addCurrentState(message.getChatId(), BotState.START);
                 return mainMenuService.getMainMenuMessage(chatId, "Все процедуры начинаются с главного " +
@@ -105,9 +113,20 @@ public class UpdateHandler {
             return BotState.SET_BALANCE;
         else if(inputMessage.matches("^\\d+$"))
             return BotState.BALANCE_CHANGED;
+        else if(currentBotState == BotState.OTHER_CATEGORY)
+            if (botStateCache.getLastChangeTypeState(message.getChatId()) == BotState.ADD_EXPENSE)
+                return BotState.EXPENSE_CATEGORY;
+            else if (botStateCache.getLastChangeTypeState(message.getChatId()) == BotState.ADD_INCOME)
+                return BotState.INCOME_CATEGORY;
+            else
+                return BotState.START;
 
         switch (inputMessage) {
             case "Получить статистику по кошелькам":
+                return BotState.STATISTICS_CHOOSE;
+            case "Получить статистику за сегодня":
+            case "Получить статистику за неделю":
+            case "Получить статистику за месяц":
                 return BotState.STATISTICS;
             case "Ежедневный кошелек":
                 return BotState.DAILY_WALLET;
@@ -135,10 +154,14 @@ public class UpdateHandler {
                 return BotState.EXPENSE_CATEGORY;
             case "Зарплата":
             case "Деньги родственников":
-            case "Подарочные":
+            case "Стипендия":
                 if(botStateCache.getLastChangeTypeState(message.getChatId()) == null)
                     return BotState.START;
                 return BotState.INCOME_CATEGORY;
+            case "Другое":
+                if(botStateCache.getLastChangeTypeState(message.getChatId()) == null)
+                    return BotState.START;
+                return BotState.OTHER_CATEGORY;
             case "Установить баланс кошелька":
                 if(botStateCache.getLastWalletState(message.getChatId()) == null)
                     return BotState.START;

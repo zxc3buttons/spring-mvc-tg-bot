@@ -37,6 +37,29 @@ public abstract class AbstractService {
 
     }
 
+    public ReplyKeyboardMarkup getChooseStatisticsTypeKeyBoard() {
+        final ReplyKeyboardMarkup replyKeyboardMarkup = new ReplyKeyboardMarkup();
+        replyKeyboardMarkup.setSelective(true);
+        replyKeyboardMarkup.setResizeKeyboard(true);
+        replyKeyboardMarkup.setOneTimeKeyboard(false);
+
+        List<KeyboardRow> keyboardRowList = new ArrayList<>();
+
+        KeyboardRow rowToday = new KeyboardRow();
+
+
+        rowToday.add(new KeyboardButton("Получить статистику за сегодня"));
+
+
+        keyboardRowList.add(rowToday);
+
+
+        replyKeyboardMarkup.setKeyboard(keyboardRowList);
+
+        return replyKeyboardMarkup;
+
+    }
+
     public ReplyKeyboardMarkup getChangeMenuKeyBoard(String keyboardType) {
 
         final ReplyKeyboardMarkup replyKeyboardMarkup = new ReplyKeyboardMarkup();
@@ -83,6 +106,7 @@ public abstract class AbstractService {
 
     }
 
+
     public ReplyKeyboardMarkup getCategoryChooseMenuKeyBoard(BotState botState) {
 
         final ReplyKeyboardMarkup replyKeyboardMarkup = new ReplyKeyboardMarkup();
@@ -95,6 +119,7 @@ public abstract class AbstractService {
         KeyboardRow row1 = new KeyboardRow();
         KeyboardRow row2 = new KeyboardRow();
         KeyboardRow row3 = new KeyboardRow();
+        KeyboardRow row4 = new KeyboardRow();
 
         if(botState == BotState.ADD_EXPENSE) {
             row1.add(new KeyboardButton("Продукты"));
@@ -107,12 +132,14 @@ public abstract class AbstractService {
 
             row3.add(new KeyboardButton("Одежда"));
             row3.add(new KeyboardButton("Транспорт"));
-            row3.add(new KeyboardButton("Подарки"));
+            row3.add(new KeyboardButton("Другое"));
+
         }
         else {
+            row1.add(new KeyboardButton("Стипендия"));
             row1.add(new KeyboardButton("Зарплата"));
             row2.add(new KeyboardButton("Деньги родственников"));
-            row3.add(new KeyboardButton("Подарочные"));
+            row3.add(new KeyboardButton("Другое"));
         }
 
         keyboardRowList.add(row1);

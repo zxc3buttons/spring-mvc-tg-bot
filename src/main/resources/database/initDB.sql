@@ -1,7 +1,7 @@
 create table if not exists wallet_changes
 (
-    id          bigint default nextval('tgusers_id_seq'::regclass) not null
-        constraint tgusers_pkey
+    id          bigint default nextval('wallet_changes_id_seq'::regclass) not null
+        constraint wallet_changes_pkey
             primary key,
     money       bigint,
     chat_id     integer,

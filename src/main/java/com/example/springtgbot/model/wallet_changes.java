@@ -10,7 +10,7 @@ import java.sql.Date;
 @Setter
 @Table
 @Entity
-@SequenceGenerator(name="seq", sequenceName = "RTDS_ADSINPUT_SEQ", initialValue=1, allocationSize=1)
+@SequenceGenerator(name="seq", sequenceName = "wallet_changes_seq", initialValue=1, allocationSize=1)
 public class wallet_changes {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "seq")

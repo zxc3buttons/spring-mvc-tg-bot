@@ -31,6 +31,14 @@ public class BotStateCache {
         return null;
     }
 
+    /*public BotState getLastCategoryTypeState(Long chatId) {
+        for(int i = map.get(chatId).size() - 1; i > -1; i--)
+            if(map.get(chatId).get(i) == BotState.ADD_EXPENSE ||
+                    map.get(chatId).get(i) == BotState.ADD_INCOME)
+                return map.get(chatId).get(i);
+        return null;
+    }*/
+
     public BotState getLastChangeTypeState(Long chatId) {
         for(int i = map.get(chatId).size() - 1; i > -1; i--)
             if(map.get(chatId).get(i) == BotState.ADD_EXPENSE ||
