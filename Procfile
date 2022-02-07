@@ -1,0 +1,1 @@
+web: java -jar -Djasypt.encryptor.password=wanna_open target/springtgbot.jar
